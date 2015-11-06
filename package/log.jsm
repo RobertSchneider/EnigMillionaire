@@ -144,6 +144,7 @@ const EnigmailLog = {
   },
 
   DEBUG: function(str) {
+    dump(str);
     EnigmailLog.WRITE("[DEBUG] " + str);
   },
 

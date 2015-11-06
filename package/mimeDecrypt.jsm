@@ -116,7 +116,7 @@ EnigmailMimeDecrypt.prototype = {
     // get data from libmime
     if (!this.initOk) return;
     this.inStream.init(stream);
-
+    
     if (count > 0) {
       var data = this.inStream.read(count);
       // detect MIME part boundary

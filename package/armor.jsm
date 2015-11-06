@@ -94,7 +94,7 @@ const EnigmailArmor = {
   // If block is not found, the null string is returned;
   locateArmoredBlock: function(text, offset, indentStr, beginIndexObj, endIndexObj, indentStrObj) {
     EnigmailLog.DEBUG("enigmail.js: Enigmail.locateArmoredBlock: " + offset + ", '" + indentStr + "'\n");
-
+    
     beginIndexObj.value = -1;
     endIndexObj.value = -1;
 

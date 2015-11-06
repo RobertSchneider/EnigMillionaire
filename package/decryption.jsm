@@ -160,7 +160,7 @@ const EnigmailDecryption = {
 
   decryptMessageEnd: function(stderrStr, exitCode, outputLen, verifyOnly, noOutput, uiFlags, retStatusObj) {
     EnigmailLog.DEBUG("enigmailCommon.jsm: decryptMessageEnd: uiFlags=" + uiFlags + ", verifyOnly=" + verifyOnly + ", noOutput=" + noOutput + "\n");
-
+    EnigmailLog.DEBUG("TEEEEST\n");
     stderrStr = stderrStr.replace(/\r\n/g, "\n");
     EnigmailLog.DEBUG("enigmailCommon.jsm: decryptMessageEnd: stderrStr=\n" + stderrStr + "\n");
     var interactive = uiFlags & nsIEnigmail.UI_INTERACTIVE;
@@ -562,6 +562,9 @@ const EnigmailDecryption = {
 
     var maxOutput = pgpBlock.length * 100; // limit output to 100 times message size
     // to avoid DoS attack
+
+EnigmailLog.Error("=====TEST ERROR; decrypt msg " + parent);
+
     var proc = EnigmailDecryption.decryptMessageStart(parent, verifyOnly, noOutput, listener,
       statusFlagsObj, startErrorMsgObj,
       null, maxOutput);

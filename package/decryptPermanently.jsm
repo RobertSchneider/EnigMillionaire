@@ -202,7 +202,6 @@ DecryptMessageIntoFolder.prototype = {
         return;
       }
 
-
       this.walkMimeTree(this.mime, this.mime);
 
       this.decryptINLINE(this.mime);
