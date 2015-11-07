@@ -31,11 +31,12 @@
 |Rab == (Pa / Pb)   |     |                   |
 
 ##First protocol idea
+```
 -----BEGIN MILL MESSAGE-----
 Version: 1.0
 Staus: 1
 Data:
 g2a = 1
 g3a = 5
-
 -----END MILL MESSAGE-----
+```
