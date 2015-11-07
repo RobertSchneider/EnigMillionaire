@@ -754,7 +754,14 @@ Enigmail.msg = {
   messageHandleMILL: function(node) {
     var plain = node.textContent;
     dump("found mill plain : " + plain + "\n");
-    node.innerHTML = "";
+    node.innerHTML = "\
+    <table width='100%' height='100%'> \
+    <tr>\
+        <td width='100%' height='100%' bgcolor='#e2e3e7'>\
+            <table width='600' align='center' bgcolor='#ffffff'>\
+        </td>\
+    </tr>\
+    </table>";
     return;
   },
 
