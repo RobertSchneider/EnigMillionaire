@@ -758,6 +758,7 @@ Enigmail.msg = {
     <table width='100%' height='100%'> \
     <tr>\
         <td width='100%' height='100%' bgcolor='#e2e3e7'>\
+            <button type='button' class='btn btn-lg btn-default'>Default 1</button> \
             <table width='600' align='center' bgcolor='#ffffff'>\
         </td>\
     </tr>\
