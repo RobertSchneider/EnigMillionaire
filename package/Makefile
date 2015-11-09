@@ -70,7 +70,8 @@ MODFILES = \
            trust.jsm \
            uris.jsm \
            verify.jsm \
-           windows.jsm
+           windows.jsm \
+           million.jsm
 
 all: deploy
 

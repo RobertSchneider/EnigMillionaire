@@ -67,6 +67,7 @@ Components.utils.import("resource://enigmail/keyRing.jsm"); /*global EnigmailKey
 Components.utils.import("resource://enigmail/attachment.jsm"); /*global EnigmailAttachment: false */
 Components.utils.import("resource://enigmail/constants.jsm"); /*global EnigmailConstants: false */
 Components.utils.import("resource://enigmail/passwords.jsm"); /*global EnigmailPassword: false */
+Components.utils.import("resource://enigmail/million.jsm");
 
 if (!Enigmail) var Enigmail = {};
 
@@ -751,21 +752,6 @@ Enigmail.msg = {
     }
   },
 
-  messageHandleMILL: function(node) {
-    var plain = node.textContent;
-    dump("found mill plain : " + plain + "\n");
-    node.innerHTML = "\
-    <table width='100%' height='100%'> \
-    <tr>\
-        <td width='100%' height='100%' bgcolor='#e2e3e7'>\
-            <button type='button' class='btn btn-lg btn-default'>Default 1</button> \
-            <table width='600' align='center' bgcolor='#ffffff'>\
-        </td>\
-    </tr>\
-    </table>";
-    return;
-  },
-
   messageParse: function(interactive, importOnly, contentEncoding, msgUriSpec) {
     EnigmailLog.DEBUG("enigmailMessengerOverlay.js: messageParse: " + interactive + "\n");
     var msgFrame = EnigmailWindows.getFrame(window, "messagepane");
@@ -809,7 +795,7 @@ Enigmail.msg = {
 
       if (bodyElementMill != null) {
         dump("found mill\n");
-        this.messageHandleMILL(bodyElementMill);
+        EnigmailMillion.messageHandleMILL(bodyElementMill);
       }
 
       // No PGP content
