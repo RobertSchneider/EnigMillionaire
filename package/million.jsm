@@ -50,9 +50,6 @@ const EnigmailMillion = {
     dump("found mill plain : " + plain + "\n");
     var cells = this.passtext(plain);
 
-    for (var i in cells) {
-      dump(i + " --> " + cells[i] + "\n");
-    };
     var html = "<table> ";
     for (var i in cells) {
      html += "<tr bgcolor='#e2e3e7'><td>"+ i + "</td><td>" + cells[i] + "</td></tr>";
