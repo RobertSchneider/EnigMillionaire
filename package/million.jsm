@@ -22,14 +22,19 @@ const EnigmailMillion = {
     g3a: 5
     -----END MILL MESSAGE-----
   */
-  passtext: function(plain)
+
+  trimText: function(plain)
   {
-    var ret = [];
     var textBegin = "-----BEGIN MILL MESSAGE-----";
     var textEnd = "-----END MILL MESSAGE-----";
     var indexBegin = plain.indexOf(textBegin) + textBegin.length;
     var indexEnd = plain.indexOf(textEnd);
-    plain = plain.substring(indexBegin,indexEnd);
+    return plain.substring(indexBegin,indexEnd);  
+  }, 
+
+  passText: function(plain)
+  {
+    var ret = [];
     plain = plain.split("\n");
     for (var i in plain) {
       if (plain[i].trim() == "") 
@@ -48,7 +53,7 @@ const EnigmailMillion = {
   messageHandleMILL: function(node) {
     var plain = node.textContent;
     dump("found mill plain : " + plain + "\n");
-    var cells = this.passtext(plain);
+    var cells = this.passText(this.trimText(plain));
 
     var html = "<table> ";
     for (var i in cells) {
@@ -58,5 +63,4 @@ const EnigmailMillion = {
     node.innerHTML = html;
     return;
   }
-
 };
