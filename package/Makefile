@@ -71,7 +71,11 @@ MODFILES = \
            uris.jsm \
            verify.jsm \
            windows.jsm \
-           million.jsm
+           million.jsm \
+           const.jsm \
+           bigint.jsm \
+           crypto.jsm \
+           helpers.jsm
 
 all: deploy
 

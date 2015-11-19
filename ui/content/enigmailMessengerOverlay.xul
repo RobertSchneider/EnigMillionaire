@@ -52,6 +52,7 @@
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <script type="application/x-javascript"  src="chrome://enigmail/content/enigmailMessengerOverlay.js"/>
+  <script type="application/x-javascript"  src="chrome://enigmail/content/const.js"/>
 
   <commandset id="mailToolbarItems">
     <command id="button_enigmail_decrypt"/>
