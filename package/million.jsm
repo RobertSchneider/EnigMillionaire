@@ -25,6 +25,8 @@ const EnigmailMillion = {
   {
     this.tofinger = fpr;
     this.ownfinger = ownfpr;
+    this.fromEmail = this.tofinger;
+    
     dump("verify:"+fpr+ "\n");
     this.G = BigInt.str2bigInt(CONST.G, 10);
     this.N = BigInt.str2bigInt(CONST.N, 16);
