@@ -28,7 +28,6 @@ const EnigmailMillion = {
     this.N_MINUS_2 = BigInt.sub(this.N, BigInt.str2bigInt('2', 10));
     this.Q = BigInt.sub(this.N, BigInt.str2bigInt('1', 10));
     BigInt.divInt_(this.Q, 2)  // meh
-    this.secret = BigInt.str2bigInt("666", 10);
   },
 
   messageHandleMILL: function(node, email) {
@@ -178,6 +177,7 @@ const EnigmailMillion = {
 
     this.g3ao = msg[3]  // save for later
 
+    this.makeSecret(false, "baum");
     this.computeGs(msg[0], msg[3])
 
     EnigmailPrefs.setPref(this.fromEmail+"_mill_g2", BigInt.bigInt2str(this.g2, 16));
@@ -389,6 +389,8 @@ dump("test5\n");
     sha256.update(CryptoJS.enc.Latin1.parse(secret))
     var hash = sha256.finalize()
     this.secret = HLP.bits2bigInt(hash.toString(CryptoJS.enc.Latin1))
+
+    dump("\nSECRET="+BigInt.bigInt2str(this.secret, 16)+"\n");
   },
 
   computeC : function (v, r) {
