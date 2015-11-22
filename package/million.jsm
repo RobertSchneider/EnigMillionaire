@@ -23,7 +23,6 @@ Components.utils.import("resource:///modules/mailServices.js");
 const EnigmailMillion = {
   init : function()
   {
-
     this.G = BigInt.str2bigInt(CONST.G, 10);
     this.N = BigInt.str2bigInt(CONST.N, 16);
     this.N_MINUS_2 = BigInt.sub(this.N, BigInt.str2bigInt('2', 10));
@@ -36,6 +35,7 @@ const EnigmailMillion = {
     this.fromEmail = email;
     var plain = node.textContent;
     plain = plain.replace("\n", "");
+    plain = plain.replace("\r", "");
     dump("found mill plain : " + plain + "\n");
     var cells = this.passText(this.trimText(plain));
 
@@ -72,12 +72,14 @@ const EnigmailMillion = {
   {
     dump(cells["Version"]);
     if (cells["Version"] != "1.0") return;
+    dump("\n"+cells["Status"]+"\n");
     this.estatus = parseInt(cells["Status"]);
     if (cells["Status"] == "1") this.answerMsg1(cells);
     if (cells["Status"] == "2") this.answerMsg2(cells);
     if (cells["Status"] == "3") this.answerMsg3(cells);
   },
 
+  //BOB
   answerMsg1 : function(cells)
   {
     var _g2a = BigInt.str2bigInt(cells["g2a"], 16, 0);
@@ -109,6 +111,9 @@ const EnigmailMillion = {
     this.d3 = this.computeD(r3, this.a3, this.c3)
 
     this.computeGs(msg[0], msg[3])
+
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_g2", BigInt.bigInt2str(this.g2, 16));
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_g3", BigInt.bigInt2str(this.g3, 16));
 
     //this.makeG2s();
     //==============ANSWER==================
@@ -144,9 +149,11 @@ const EnigmailMillion = {
     this.smpSendEmail(send, 2);
   },
 
+  //ALICE
   answerMsg2 : function(cells)
   {
-    this.loadG2s();
+    this.a2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_a2"), 16, 0);
+    this.a3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_a3"), 16, 0);
 
     var _g2a = BigInt.str2bigInt(cells["g2a"], 16, 0);
     var _c2 = BigInt.str2bigInt(cells["c2"], 16, 0);
@@ -172,7 +179,10 @@ const EnigmailMillion = {
     this.g3ao = msg[3]  // save for later
 
     this.computeGs(msg[0], msg[3])
-    this.loadG2s();
+
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_g2", BigInt.bigInt2str(this.g2, 16));
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_g3", BigInt.bigInt2str(this.g3, 16));
+
         // verify znp of cP
     var t1 = HLP.multPowMod(this.g3, msg[9], msg[6], msg[8], this.N)
     var t2 = HLP.multPowMod(this.G, msg[9], this.g2, msg[10], this.N)
@@ -233,10 +243,13 @@ const EnigmailMillion = {
     this.smpSendEmail(send, 3);
   },
 
+  //BOB
   answerMsg3 : function(cells)
   {
     dump("___\n");
-    this.loadG2s();
+    
+    this.g2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g2"), 16, 0);
+    this.g3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3"), 16, 0);
 
 dump("___\n");
     var _p = BigInt.str2bigInt(cells["p"], 16, 0);
@@ -253,9 +266,6 @@ dump("___\n");
     if ( !HLP.checkGroup(msg[0], this.N_MINUS_2) || !HLP.checkGroup(msg[1], this.N_MINUS_2) || !HLP.checkGroup(msg[5], this.N_MINUS_2)) return this.abort()
 dump("test2\n");
     // verify znp of cP
-
-    this.g2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g2"+((this.estatus)%2)), 16, 0);
-    this.g3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3"+((this.estatus)%2)), 16, 0);
 
     var t1 = HLP.multPowMod(this.g3, msg[3], msg[0], msg[2], this.N)
     var t2 = HLP.multPowMod(this.G, msg[3], this.g2, msg[4], this.N)
@@ -296,6 +306,7 @@ dump("test5\n");
     dump(trust?"YES\n":"NO\n");
   },
 
+  //START
   initialize : function(question) 
   {
     question = CryptoJS.enc.Latin1.parse(question).toString(CryptoJS.enc.Utf8);
@@ -308,6 +319,9 @@ dump("test5\n");
     this.c3 = this.computeC(2, r3);
     this.d2 = this.computeD(r2, this.a2, this.c2);
     this.d3 = this.computeD(r3, this.a3, this.c3);
+
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_a2", BigInt.bigInt2str(this.a2, 16));
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_a3", BigInt.bigInt2str(this.a3, 16));
 
     var send = "";
     
@@ -344,12 +358,12 @@ dump("test5\n");
   }, 
 
   loadG2s : function() {
-    this.a2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_a2"+((this.estatus-1)%2)), 16, 0);
-    this.a3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_a3"+((this.estatus-1)%2)), 16, 0);
-    this.g2a = BigInt.powMod(this.G, this.a2, this.N);
-    this.g3a = BigInt.powMod(this.G, this.a3, this.N);
-    this.g2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g2"+((this.estatus-1)%2)), 16, 0);
-    this.g3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3"+((this.estatus-1)%2)), 16, 0);
+    //this.a2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_a2"+((this.estatus-1)%2)), 16, 0);
+    //this.a3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_a3"+((this.estatus-1)%2)), 16, 0);
+    //this.g2a = BigInt.powMod(this.G, this.a2, this.N);
+    //this.g3a = BigInt.powMod(this.G, this.a3, this.N);
+    //this.g2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g2"+((this.estatus-1)%2)), 16, 0);
+    //this.g3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3"+((this.estatus-1)%2)), 16, 0);
   },
 
   //================================
@@ -360,8 +374,8 @@ dump("test5\n");
     this.g3a = BigInt.powMod(this.G, this.a3, this.N);
     if (!HLP.checkGroup(this.g2a, this.N_MINUS_2) || !HLP.checkGroup(this.g3a, this.N_MINUS_2)) this.makeG2s();
     else {
-      EnigmailPrefs.setPref(this.fromEmail+"_mill_a2"+((this.estatus)%2), BigInt.bigInt2str(this.a2, 16));
-      EnigmailPrefs.setPref(this.fromEmail+"_mill_a3"+((this.estatus)%2), BigInt.bigInt2str(this.a3, 16));
+      //EnigmailPrefs.setPref(this.fromEmail+"_mill_a2"+((this.estatus)%2), BigInt.bigInt2str(this.a2, 16));
+      //EnigmailPrefs.setPref(this.fromEmail+"_mill_a3"+((this.estatus)%2), BigInt.bigInt2str(this.a3, 16));
     }
   },
 
@@ -388,8 +402,8 @@ dump("test5\n");
   computeGs : function (_g2a, _g3a) {
     this.g2 = BigInt.powMod(_g2a, this.a2, this.N);
     this.g3 = BigInt.powMod(_g3a, this.a3, this.N);
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_g2"+((this.estatus)%2), BigInt.bigInt2str(this.g2, 16));
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_g3"+((this.estatus)%2), BigInt.bigInt2str(this.g3, 16));
+    //EnigmailPrefs.setPref(this.fromEmail+"_mill_g2"+((this.estatus)%2), BigInt.bigInt2str(this.g2, 16));
+    //EnigmailPrefs.setPref(this.fromEmail+"_mill_g3"+((this.estatus)%2), BigInt.bigInt2str(this.g3, 16));
   },
 
   computePQ : function (r) {
