@@ -46,6 +46,7 @@ catch (ex) {
 }
 
 Components.utils.import("resource://enigmail/core.jsm"); /*global EnigmailCore: false */
+Components.utils.import("resource://enigmail/data.jsm");
 Components.utils.import("resource://enigmail/funcs.jsm");
 Components.utils.import("resource://enigmail/mimeVerify.jsm");
 Components.utils.import("resource://enigmail/fixExchangeMsg.jsm");
@@ -795,7 +796,6 @@ Enigmail.msg = {
 
       if (bodyElementMill != null) {
         var mailNewsUrl = this.getCurrentMsgUrl();
-        dump(keyIdObj+"\n");
         EnigmailMillion.messageHandleMILL(bodyElementMill, mailNewsUrl.username);
       }
 

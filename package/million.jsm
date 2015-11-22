@@ -50,6 +50,9 @@ const EnigmailMillion = {
     html += "</table>";
     node.innerHTML = html;
 
+    this.tofinger = cells["tofinger"];
+    this.ownfinger = cells["ownfinger"];
+
     if(cells["Status"] == "0")
     {
       this.estatus = 0;
@@ -350,6 +353,8 @@ dump("test5\n");
     body += "Status: "+status+CONST.LN;
     body += "Data:#";
     body += data;
+    body += "ownfinger: " + this.tofinger;
+    body += "tofinger: " + this.ownfinger;
     body += CONST.LN;
     body += textEnd;
     dump(body+"\n");
