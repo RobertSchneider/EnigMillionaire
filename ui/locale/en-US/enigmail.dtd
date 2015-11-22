@@ -469,6 +469,7 @@
 <!ENTITY enigmail.keyMan.close.label               "Close Window">
 <!ENTITY enigmail.keyMan.generate.label            "New Key Pair">
 <!ENTITY enigmail.keyMan.sign.label                "Sign Key">
+<!ENTITY enigmail.keyMan.verify.smp                "Verify Fingerprint SMP">
 <!ENTITY enigmail.keyMan.setTrust.label            "Set Owner Trust">
 <!ENTITY enigmail.keyMan.genRevoke.label           "Revocation Certificate">
 <!ENTITY enigmail.keyMan.ctxGenRevoke.label        "Generate &amp; Save Revocation Certificate">

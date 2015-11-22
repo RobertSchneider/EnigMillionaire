@@ -178,6 +178,11 @@
                   observes="bcSignKey"
                   accesskey="&enigmail.keyMan.sign.accesskey;"
                   oncommand="enigSignKey()"/>
+        <menuitem label="&enigmail.keyMan.verify.smp;"
+                  id="smpVerify"
+                  observes="bcSmpVerify"
+                  accesskey="&enigmail.keyMan.verify.smp;"
+                  oncommand="enigSmpVerify()"/>
         <menuitem label="&enigmail.keyMan.setTrust.label;"
                   id="setTrust"
                   observes="bcNoKey"
@@ -361,6 +366,7 @@
       <menuseparator/>
 
       <menuitem id="ctxSign" observes="bcSignKey" label="&enigmail.keyMan.sign.label;" oncommand="enigSignKey()"/>
+      <menuitem id="ctxVerify" observes="bcSmpVerify" label="&enigmail.keyMan.verify.smp;" oncommand="enigSmpVerify()"/>
       <menuitem id="ctxTrust" label="&enigmail.keyMan.setTrust.label;" oncommand="enigEditKeyTrust()"/>
       <menuitem id="ctxAddToRule" observes="bcSignKey" label="&enigmail.keyMan.addToPRRule.label;" oncommand="addToPRRule()"/>
 

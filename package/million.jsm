@@ -21,8 +21,11 @@ Components.utils.import("resource://enigmail/helpers.jsm");
 Components.utils.import("resource:///modules/mailServices.js");
 
 const EnigmailMillion = {
-  init : function()
+  init : function(fpr, ownfpr)
   {
+    this.fpr = fpr;
+    this.ownfpr = ownfpr;
+    dump("verify:"+fpr+ "\n");
     this.G = BigInt.str2bigInt(CONST.G, 10);
     this.N = BigInt.str2bigInt(CONST.N, 16);
     this.N_MINUS_2 = BigInt.sub(this.N, BigInt.str2bigInt('2', 10));
@@ -358,12 +361,7 @@ dump("test5\n");
   }, 
 
   loadG2s : function() {
-    //this.a2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_a2"+((this.estatus-1)%2)), 16, 0);
-    //this.a3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_a3"+((this.estatus-1)%2)), 16, 0);
-    //this.g2a = BigInt.powMod(this.G, this.a2, this.N);
-    //this.g3a = BigInt.powMod(this.G, this.a3, this.N);
-    //this.g2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g2"+((this.estatus-1)%2)), 16, 0);
-    //this.g3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3"+((this.estatus-1)%2)), 16, 0);
+
   },
 
   //================================
@@ -373,18 +371,13 @@ dump("test5\n");
     this.g2a = BigInt.powMod(this.G, this.a2, this.N);
     this.g3a = BigInt.powMod(this.G, this.a3, this.N);
     if (!HLP.checkGroup(this.g2a, this.N_MINUS_2) || !HLP.checkGroup(this.g3a, this.N_MINUS_2)) this.makeG2s();
-    else {
-      //EnigmailPrefs.setPref(this.fromEmail+"_mill_a2"+((this.estatus)%2), BigInt.bigInt2str(this.a2, 16));
-      //EnigmailPrefs.setPref(this.fromEmail+"_mill_a3"+((this.estatus)%2), BigInt.bigInt2str(this.a3, 16));
-    }
   },
 
   makeSecret : function (our, secret) {
-    dump(MailServices.accounts.defaultAccount.defaultIdentity.email+"\n");
     var sha256 = CryptoJS.algo.SHA256.create()
     sha256.update(CryptoJS.enc.Latin1.parse(HLP.packBytes(1, 1)))
-    sha256.update(CryptoJS.enc.Hex.parse(our ? MailServices.accounts.defaultAccount.defaultIdentity.email : this.fromEmail))
-    sha256.update(CryptoJS.enc.Hex.parse(our ? this.fromEmail : MailServices.accounts.defaultAccount.defaultIdentity.email))
+    sha256.update(CryptoJS.enc.Hex.parse(our ? ownfpr : fpr))
+    sha256.update(CryptoJS.enc.Hex.parse(our ? fpr : ownfpr))
     //sha256.update(CryptoJS.enc.Latin1.parse(this.ssid))
     sha256.update(CryptoJS.enc.Latin1.parse(secret))
     var hash = sha256.finalize()
@@ -404,8 +397,6 @@ dump("test5\n");
   computeGs : function (_g2a, _g3a) {
     this.g2 = BigInt.powMod(_g2a, this.a2, this.N);
     this.g3 = BigInt.powMod(_g3a, this.a3, this.N);
-    //EnigmailPrefs.setPref(this.fromEmail+"_mill_g2"+((this.estatus)%2), BigInt.bigInt2str(this.g2, 16));
-    //EnigmailPrefs.setPref(this.fromEmail+"_mill_g3"+((this.estatus)%2), BigInt.bigInt2str(this.g3, 16));
   },
 
   computePQ : function (r) {

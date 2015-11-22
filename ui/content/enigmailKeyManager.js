@@ -43,6 +43,8 @@ const Ci = Components.interfaces;
 const Cu = Components.utils;
 
 Components.utils.import("resource://enigmail/streams.jsm"); /*global EnigmailStreams: false */
+Components.utils.import("resource://enigmail/million.jsm");
+Components.utils.import("resource:///modules/mailServices.js");
 
 
 const INPUT = 0;
@@ -812,6 +814,26 @@ function enigEditKeyExpiry() {
   }
 }
 
+function enigSmpVerify() {
+  var keyList = enigmailGetSelectedKeys();
+  if (keyList.length === 0) {
+    EnigAlert(EnigGetString("noKeySelected"));
+    return;
+  }
+  dump(gKeyList[keyList[0]].keyId+"\n");
+  dump(gKeyList[keyList[0]].fpr+"\n");
+
+  var own;
+  var email = MailServices.accounts.defaultAccount.defaultIdentity.email;
+  dump(email + "\n");
+  for(var i = 0; i < gKeyList.length; i++) {
+    var em = gKeyList[i].userId.substr(gKeyList[i].userId.lastIndexOf("<"));
+    em = em.substr(1, em.length-2);
+    dump(em + "\n");
+    if(email == em) {own = em; break;}
+  }
+  EnigmailMillion.init(gKeyList[keyList[0]].fpr, own);
+}
 
 function enigSignKey() {
   var keyList = enigmailGetSelectedKeys();
