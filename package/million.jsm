@@ -128,16 +128,16 @@ const EnigmailMillion = {
     var d6 = this.computeD(r6, this.secret, cP);
 
     var send = "";
-    send += "g2a="+BigInt.bigInt2str(this.g2a, 16)+"\n";
-    send += "c2="+BigInt.bigInt2str(this.c2, 16)+"\n";
-    send += "d2="+BigInt.bigInt2str(this.d2, 16)+"\n";
-    send += "g3a="+BigInt.bigInt2str(this.g3a, 16)+"\n";
-    send += "c3="+BigInt.bigInt2str(this.c3, 16)+"\n";
-    send += "d3="+BigInt.bigInt2str(this.d3, 16)+"\n";
-    send += "p="+BigInt.bigInt2str(this.p, 16)+"\n";
-    send += "q="+BigInt.bigInt2str(this.q, 16)+"\n";
-    send += "cP="+BigInt.bigInt2str(cP, 16)+"\n";
-    send += "d5="+BigInt.bigInt2str(d5, 16)+"\n";
+    send += "g2a="+BigInt.bigInt2str(this.g2a, 16)+"#";
+    send += "c2="+BigInt.bigInt2str(this.c2, 16)+"#";
+    send += "d2="+BigInt.bigInt2str(this.d2, 16)+"#";
+    send += "g3a="+BigInt.bigInt2str(this.g3a, 16)+"#";
+    send += "c3="+BigInt.bigInt2str(this.c3, 16)+"#";
+    send += "d3="+BigInt.bigInt2str(this.d3, 16)+"#";
+    send += "p="+BigInt.bigInt2str(this.p, 16)+"#";
+    send += "q="+BigInt.bigInt2str(this.q, 16)+"#";
+    send += "cP="+BigInt.bigInt2str(cP, 16)+"#";
+    send += "d5="+BigInt.bigInt2str(d5, 16)+"#";
     send += "d6="+BigInt.bigInt2str(d6, 16);
 
     this.smpSendEmail(send, 2);
@@ -220,13 +220,13 @@ const EnigmailMillion = {
     dump(BigInt.bigInt2str(HLP.smpHash(3, HLP.multPowMod(this.G, this.d2, this.g2a, this.c2, this.N)), 16) + "\n");
 
     var send = "";
-    send += "p="+BigInt.bigInt2str(this.p, 16)+"\n";
-    send += "q="+BigInt.bigInt2str(this.q, 16)+"\n";
-    send += "cP="+BigInt.bigInt2str(cP, 16)+"\n";
-    send += "d5="+BigInt.bigInt2str(d5, 16)+"\n";
-    send += "d6="+BigInt.bigInt2str(d6, 16)+"\n";
-    send += "r="+BigInt.bigInt2str(this.r, 16)+"\n";
-    send += "cR="+BigInt.bigInt2str(cR, 16)+"\n";
+    send += "p="+BigInt.bigInt2str(this.p, 16)+"#";
+    send += "q="+BigInt.bigInt2str(this.q, 16)+"#";
+    send += "cP="+BigInt.bigInt2str(cP, 16)+"#";
+    send += "d5="+BigInt.bigInt2str(d5, 16)+"#";
+    send += "d6="+BigInt.bigInt2str(d6, 16)+"#";
+    send += "r="+BigInt.bigInt2str(this.r, 16)+"#";
+    send += "cR="+BigInt.bigInt2str(cR, 16)+"#";
     send += "d7="+BigInt.bigInt2str(d7, 16);
 
     this.smpSendEmail(send, 3);
@@ -310,12 +310,12 @@ dump("test5\n");
 
     var send = "";
     
-    send += "question="+question+"\n";
-    send += "g2a="+BigInt.bigInt2str(this.g2a, 16)+"\n";
-    send += "c2="+BigInt.bigInt2str(this.c2, 16)+"\n";
-    send += "d2="+BigInt.bigInt2str(this.d2, 16)+"\n";
-    send += "g3a="+BigInt.bigInt2str(this.g3a, 16)+"\n";
-    send += "c3="+BigInt.bigInt2str(this.c3, 16)+"\n";
+    send += "question="+question+"#";
+    send += "g2a="+BigInt.bigInt2str(this.g2a, 16)+"#";
+    send += "c2="+BigInt.bigInt2str(this.c2, 16)+"#";
+    send += "d2="+BigInt.bigInt2str(this.d2, 16)+"#";
+    send += "g3a="+BigInt.bigInt2str(this.g3a, 16)+"#";
+    send += "c3="+BigInt.bigInt2str(this.c3, 16)+"#";
     send += "d3="+BigInt.bigInt2str(this.d3, 16);
 
     this.makeSecret(true, "baum");
@@ -326,7 +326,15 @@ dump("test5\n");
   {
     var textBegin = "-----BEGIN MILL MESSAGE-----";
     var textEnd = "-----END MILL MESSAGE-----";
-    var body = textBegin+"\nVersion: 1.0\nStatus: " + status + "\nData:\n"+data+"\n"+textEnd;
+
+    var body = textBegin+"#";
+    body += "Version: 1.0"+"#";
+    body += "Status: "+status+"#";
+    body += "Data:#";
+    body += data;
+    body += "#";
+    body += textEnd;
+    dump(body+"\n");
     this.sendMail("skjdstzn@gmx.de", "million test", body);
   },
 
@@ -405,6 +413,8 @@ dump("test5\n");
     let msgComposeParams = Components.classes["@mozilla.org/messengercompose/composeparams;1"].createInstance(Components.interfaces.nsIMsgComposeParams);
     msgComposeParams.composeFields = compFields;
 
+    dump(compFields.body+"\n");
+
     let gMsgCompose = Components.classes["@mozilla.org/messengercompose/compose;1"].createInstance(Components.interfaces.nsIMsgCompose);
     let msgSend = Components.classes["@mozilla.org/messengercompose/send;1"].createInstance(Components.interfaces.nsIMsgSend);
     gMsgCompose.initialize(msgComposeParams);
@@ -413,7 +423,7 @@ dump("test5\n");
   /*
     -----BEGIN MILL MESSAGE-----
     Version: 1.0
-    Staus: 1
+    Status: 0
     Data:
     g2a: 1
     g3a: 5
@@ -432,7 +442,7 @@ dump("test5\n");
   passText: function(plain)
   {
     var ret = [];
-    plain = plain.split("\n");
+    plain = plain.split("#");
     for (var i in plain) {
       if (plain[i].trim() == "") 
         continue; 
