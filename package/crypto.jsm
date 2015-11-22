@@ -205,7 +205,7 @@ var CryptoJS = CryptoJS || (function (Math, undefined) {
          */
         concat: function (wordArray) {
             // Shortcuts
-            var thisWords = this.words;
+            var thisWords = this.words || [];
             var thatWords = wordArray.words;
             var thisSigBytes = this.sigBytes;
             var thatSigBytes = wordArray.sigBytes;
@@ -244,7 +244,7 @@ var CryptoJS = CryptoJS || (function (Math, undefined) {
          */
         clamp: function () {
             // Shortcuts
-            var words = this.words;
+            var words = this.words || [];
             var sigBytes = this.sigBytes;
 
             // Clamp
@@ -2104,7 +2104,7 @@ code.google.com/p/crypto-js/wiki/License
 
         _doProcessBlock: function (M, offset) {
             // Shortcut
-            var H = this._hash.words;
+            var H = this._hash.words || [];
 
             // Working variables
             var a = H[0];

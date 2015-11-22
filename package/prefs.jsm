@@ -89,6 +89,7 @@ const EnigmailPrefs = {
   },
 
   getPref: function(prefName) {
+    dump("enigmailCommon.jsm: getPref: " + prefName + ", " + "\n");
     if (!p.branch) {
       initPrefService();
     }
@@ -129,8 +130,8 @@ const EnigmailPrefs = {
    * @return Boolean Was the value stored successfully?
    */
   setPref: function(prefName, value) {
-    dump("enigmailCommon.jsm: setPref: " + prefName + ", " + value + "\n");
-    EnigmailLog.DEBUG("enigmailCommon.jsm: setPref: " + prefName + ", " + value + "\n");
+    dump("enigmailCommon.jsm: setPref: " + prefName + ", " + "\n");
+    //EnigmailLog.DEBUG("enigmailCommon.jsm: setPref: " + prefName + ", " + value + "\n");
 
     if (!p.branch) {
       initPrefService();

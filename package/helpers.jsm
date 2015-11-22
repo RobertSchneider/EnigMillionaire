@@ -4,10 +4,11 @@
 
 
 Components.utils.import("resource://enigmail/const.jsm");
-Components.utils.import("resource://enigmail/crypto.jsm");
 Components.utils.import("resource://enigmail/bigint.jsm");
 
-var HLP = {}, CryptoJS, BigInt
+var HLP = {}
+HLP.CryptoJS = null;
+HLP.BigInt = null;
   // data types (byte lengths)
   var DTS = {
       BYTE  : 1
@@ -69,51 +70,51 @@ var HLP = {}, CryptoJS, BigInt
   }
 
   HLP.smpHash = function (version, fmpi, smpi) {
-    var sha256 = CryptoJS.algo.SHA256.create()
-    sha256.update(CryptoJS.enc.Latin1.parse(HLP.packBytes(version, DTS.BYTE)))
-    sha256.update(CryptoJS.enc.Latin1.parse(HLP.packMPI(fmpi)))
-    if (smpi) sha256.update(CryptoJS.enc.Latin1.parse(HLP.packMPI(smpi)))
+    var sha256 = this.CryptoJS.algo.SHA256.create()
+    sha256.update(this.CryptoJS.enc.Latin1.parse(HLP.packBytes(version, DTS.BYTE)))
+    sha256.update(this.CryptoJS.enc.Latin1.parse(HLP.packMPI(fmpi)))
+    if (smpi) sha256.update(this.CryptoJS.enc.Latin1.parse(HLP.packMPI(smpi)))
     var hash = sha256.finalize()
-    return HLP.bits2bigInt(hash.toString(CryptoJS.enc.Latin1))
+    return HLP.bits2bigInt(hash.toString(this.CryptoJS.enc.Latin1))
   }
 
   HLP.makeMac = function (aesctr, m) {
-    var pass = CryptoJS.enc.Latin1.parse(m)
-    var mac = CryptoJS.HmacSHA256(CryptoJS.enc.Latin1.parse(aesctr), pass)
-    return HLP.mask(mac.toString(CryptoJS.enc.Latin1), 0, 160)
+    var pass = this.CryptoJS.enc.Latin1.parse(m)
+    var mac = this.CryptoJS.HmacSHA256(this.CryptoJS.enc.Latin1.parse(aesctr), pass)
+    return HLP.mask(mac.toString(this.CryptoJS.enc.Latin1), 0, 160)
   }
 
   HLP.make1Mac = function (aesctr, m) {
-    var pass = CryptoJS.enc.Latin1.parse(m)
-    var mac = CryptoJS.HmacSHA1(CryptoJS.enc.Latin1.parse(aesctr), pass)
-    return mac.toString(CryptoJS.enc.Latin1)
+    var pass = this.CryptoJS.enc.Latin1.parse(m)
+    var mac = this.CryptoJS.HmacSHA1(this.CryptoJS.enc.Latin1.parse(aesctr), pass)
+    return mac.toString(this.CryptoJS.enc.Latin1)
   }
 
   HLP.encryptAes = function (msg, c, iv) {
     var opts = {
-        mode: CryptoJS.mode.CTR
-      , iv: CryptoJS.enc.Latin1.parse(iv)
-      , padding: CryptoJS.pad.NoPadding
+        mode: this.CryptoJS.mode.CTR
+      , iv: this.CryptoJS.enc.Latin1.parse(iv)
+      , padding: this.CryptoJS.pad.NoPadding
     }
-    var aesctr = CryptoJS.AES.encrypt(
+    var aesctr = this.CryptoJS.AES.encrypt(
         msg
-      , CryptoJS.enc.Latin1.parse(c)
+      , this.CryptoJS.enc.Latin1.parse(c)
       , opts
     )
-    var aesctr_decoded = CryptoJS.enc.Base64.parse(aesctr.toString())
-    return CryptoJS.enc.Latin1.stringify(aesctr_decoded)
+    var aesctr_decoded = this.CryptoJS.enc.Base64.parse(aesctr.toString())
+    return this.CryptoJS.enc.Latin1.stringify(aesctr_decoded)
   }
 
   HLP.decryptAes = function (msg, c, iv) {
-    msg = CryptoJS.enc.Latin1.parse(msg)
+    msg = this.CryptoJS.enc.Latin1.parse(msg)
     var opts = {
-        mode: CryptoJS.mode.CTR
-      , iv: CryptoJS.enc.Latin1.parse(iv)
-      , padding: CryptoJS.pad.NoPadding
+        mode: this.CryptoJS.mode.CTR
+      , iv: this.CryptoJS.enc.Latin1.parse(iv)
+      , padding: this.CryptoJS.pad.NoPadding
     }
-    return CryptoJS.AES.decrypt(
-        CryptoJS.enc.Base64.stringify(msg)
-      , CryptoJS.enc.Latin1.parse(c)
+    return this.CryptoJS.AES.decrypt(
+        this.CryptoJS.enc.Base64.stringify(msg)
+      , this.CryptoJS.enc.Latin1.parse(c)
       , opts
     )
   }
@@ -140,17 +141,17 @@ var HLP = {}, CryptoJS, BigInt
   }
 
   HLP.h1 = function (b, secbytes) {
-    var sha1 = CryptoJS.algo.SHA1.create()
-    sha1.update(CryptoJS.enc.Latin1.parse(b))
-    sha1.update(CryptoJS.enc.Latin1.parse(secbytes))
-    return (sha1.finalize()).toString(CryptoJS.enc.Latin1)
+    var sha1 = this.CryptoJS.algo.SHA1.create()
+    sha1.update(this.CryptoJS.enc.Latin1.parse(b))
+    sha1.update(this.CryptoJS.enc.Latin1.parse(secbytes))
+    return (sha1.finalize()).toString(this.CryptoJS.enc.Latin1)
   }
 
   HLP.h2 = function (b, secbytes) {
-    var sha256 = CryptoJS.algo.SHA256.create()
-    sha256.update(CryptoJS.enc.Latin1.parse(b))
-    sha256.update(CryptoJS.enc.Latin1.parse(secbytes))
-    return (sha256.finalize()).toString(CryptoJS.enc.Latin1)
+    var sha256 = this.CryptoJS.algo.SHA256.create()
+    sha256.update(this.CryptoJS.enc.Latin1.parse(b))
+    sha256.update(this.CryptoJS.enc.Latin1.parse(secbytes))
+    return (sha256.finalize()).toString(this.CryptoJS.enc.Latin1)
   }
 
   HLP.mask = function (bytes, start, n) {
@@ -251,7 +252,7 @@ var HLP = {}, CryptoJS, BigInt
   }
 
   HLP.wrapMsg = function (msg, fs, v3, our_it, their_it) {
-    msg = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Latin1.parse(msg))
+    msg = this.CryptoJS.enc.Base64.stringify(this.CryptoJS.enc.Latin1.parse(msg))
     msg = WRAPPER_BEGIN + ":" + msg + WRAPPER_END
 
     var its

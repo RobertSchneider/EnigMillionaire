@@ -794,8 +794,8 @@ Enigmail.msg = {
     if (!msgText) {
 
       if (bodyElementMill != null) {
-        dump("found mill\n");
-        EnigmailMillion.messageHandleMILL(bodyElementMill);
+        var mailNewsUrl = this.getCurrentMsgUrl();
+        EnigmailMillion.messageHandleMILL(bodyElementMill, mailNewsUrl.username);
       }
 
       // No PGP content
