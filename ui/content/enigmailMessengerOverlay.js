@@ -795,6 +795,7 @@ Enigmail.msg = {
 
       if (bodyElementMill != null) {
         var mailNewsUrl = this.getCurrentMsgUrl();
+        dump(keyIdObj+"\n");
         EnigmailMillion.messageHandleMILL(bodyElementMill, mailNewsUrl.username);
       }
 

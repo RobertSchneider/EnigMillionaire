@@ -833,6 +833,7 @@ function enigSmpVerify() {
     if(email == em) {own = em; break;}
   }
   EnigmailMillion.init(gKeyList[keyList[0]].fpr, own);
+  EnigmailMillion.initialize("baum");
 }
 
 function enigSignKey() {

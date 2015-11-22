@@ -23,14 +23,16 @@ Components.utils.import("resource:///modules/mailServices.js");
 const EnigmailMillion = {
   init : function(fpr, ownfpr)
   {
-    this.fpr = fpr;
-    this.ownfpr = ownfpr;
+    this.tofinger = fpr;
+    this.ownfinger = ownfpr;
     dump("verify:"+fpr+ "\n");
     this.G = BigInt.str2bigInt(CONST.G, 10);
     this.N = BigInt.str2bigInt(CONST.N, 16);
     this.N_MINUS_2 = BigInt.sub(this.N, BigInt.str2bigInt('2', 10));
     this.Q = BigInt.sub(this.N, BigInt.str2bigInt('1', 10));
     BigInt.divInt_(this.Q, 2)  // meh
+    HLP.CryptoJS = CryptoJS;
+    HLP.BigInt = BigInt;
   },
 
   messageHandleMILL: function(node, email) {
@@ -48,8 +50,6 @@ const EnigmailMillion = {
     html += "</table>";
     node.innerHTML = html;
 
-    HLP.CryptoJS = CryptoJS;
-    HLP.BigInt = BigInt;
     if(cells["Status"] == "0")
     {
       this.estatus = 0;
@@ -376,8 +376,8 @@ dump("test5\n");
   makeSecret : function (our, secret) {
     var sha256 = CryptoJS.algo.SHA256.create()
     sha256.update(CryptoJS.enc.Latin1.parse(HLP.packBytes(1, 1)))
-    sha256.update(CryptoJS.enc.Hex.parse(our ? ownfpr : fpr))
-    sha256.update(CryptoJS.enc.Hex.parse(our ? fpr : ownfpr))
+    sha256.update(CryptoJS.enc.Hex.parse(our ? this.ownfinger : this.tofinger))
+    sha256.update(CryptoJS.enc.Hex.parse(our ? this.tofinger : this.ownfinger))
     //sha256.update(CryptoJS.enc.Latin1.parse(this.ssid))
     sha256.update(CryptoJS.enc.Latin1.parse(secret))
     var hash = sha256.finalize()
