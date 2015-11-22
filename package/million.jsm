@@ -354,7 +354,7 @@ dump("test5\n");
     body += "Data:#";
     body += data;
     body += CONST.LN;
-    body += "ownfinger: " + this.tofinger + COSNT.LN;
+    body += "ownfinger: " + this.tofinger + CONST.LN;
     body += "tofinger: " + this.ownfinger + CONST.LN;
     body += textEnd;
     dump(body+"\n");
