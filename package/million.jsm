@@ -36,7 +36,6 @@ const EnigmailMillion = {
   },
 
   messageHandleMILL: function(node, email) {
-    this.fromEmail = email;
     var plain = node.textContent;
     plain = plain.replace("\n", "");
     plain = plain.replace("\r", "");
@@ -52,6 +51,8 @@ const EnigmailMillion = {
 
     this.tofinger = cells["tofinger"];
     this.ownfinger = cells["ownfinger"];
+
+    this.fromEmail = this.tofinger;
 
     if(cells["Status"] == "0")
     {

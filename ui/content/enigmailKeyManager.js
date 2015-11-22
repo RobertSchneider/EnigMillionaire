@@ -830,7 +830,7 @@ function enigSmpVerify() {
     var em = gKeyList[i].userId.substr(gKeyList[i].userId.lastIndexOf("<"));
     em = em.substr(1, em.length-2);
     dump(em + "\n");
-    if(email == em) {own = em; break;}
+    if(email == em) {own = gKeyList[i].fpr; break;}
   }
   EnigmailMillion.init(gKeyList[keyList[0]].fpr, own);
   EnigmailMillion.initialize("baum");
