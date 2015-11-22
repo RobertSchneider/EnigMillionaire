@@ -353,6 +353,7 @@ dump("test5\n");
     body += "Status: "+status+CONST.LN;
     body += "Data:#";
     body += data;
+    body += CONST.LN;
     body += "ownfinger: " + this.tofinger;
     body += "tofinger: " + this.ownfinger;
     body += CONST.LN;
