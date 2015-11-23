@@ -47,7 +47,6 @@
 
 <dialog id="enigmailSearchKeyDlg"
         title="&enigmail.searchKeyDlg.label;"
-        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         onload="return onLoad();"
         ondialogaccept="return onAccept();"
         ondialogcancel="onCancel();"

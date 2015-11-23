@@ -824,16 +824,17 @@ function enigSmpVerify() {
   dump(gKeyList[keyList[0]].fpr+"\n");
 
   var own;
+  var to;
   var email = MailServices.accounts.defaultAccount.defaultIdentity.email;
   dump(email + "\n");
   for(var i = 0; i < gKeyList.length; i++) {
     var em = gKeyList[i].userId.substr(gKeyList[i].userId.lastIndexOf("<"));
     em = em.substr(1, em.length-2);
     dump(em + "\n");
-    if(email == em) {own = gKeyList[i].fpr; break;}
+    if(email == em) {own = gKeyList[i].fpr; to = em; break;}
   }
-  EnigmailMillion.init(gKeyList[keyList[0]].fpr, own);
-  EnigmailMillion.initialize("baum");
+  EnigmailMillion.init(gKeyList[keyList[0]].fpr, own, to);
+  EnigmailMillion.readSecret();
 }
 
 function enigSignKey() {

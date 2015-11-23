@@ -296,7 +296,9 @@ EnigmailMimeDecrypt.prototype = {
       false,
       false,
       Ci.nsIEnigmail.UI_PGP_MIME,
-      this.returnStatus);
+      this.returnStatus, this.decoded);
+
+    this.decoded = "";
 
     this.displayStatus();
 
@@ -401,6 +403,8 @@ EnigmailMimeDecrypt.prototype = {
 
     this.returnData(this.decryptedData);
 
+    this.decoded = this.decryptedData;
+
     this.decryptedData = "";
     this.exitCode = exitCode;
   },
@@ -413,6 +417,7 @@ EnigmailMimeDecrypt.prototype = {
       this.mimeSvc.onStartRequest(null, null);
       this.mimeSvc.onDataAvailable(null, null, gConv, 0, data.length);
       this.mimeSvc.onStopRequest(null, null, 0);
+      this.decoded = "";
     }
     catch (ex) {
       EnigmailLog.ERROR("mimeDecrypt.jsm: returnData(): mimeSvc.onDataAvailable failed:\n" + ex.toString());

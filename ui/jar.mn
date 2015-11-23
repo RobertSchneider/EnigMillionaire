@@ -25,6 +25,8 @@ enigmail.jar:
 	content/enigmail/enigmailConsole.xul           (content/enigmailConsole.xul)
 	content/enigmail/enigmailConsole.js            (content/enigmailConsole.js)
 	content/enigmail/enigmailConsole.htm           (content/enigmailConsole.htm)
+	content/enigmail/enigmailMillionSecret.xul     (content/enigmailMillionSecret.xul)
+	content/enigmail/enigmailMillionSecret.js      (content/enigmailMillionSecret.js)
 	content/enigmail/enigmailCustToolOverlay.xul   (content/enigmailCustToolOverlay.xul)
 	content/enigmail/enigmailDispPhoto.js          (content/enigmailDispPhoto.js)
 	content/enigmail/enigmailDispPhoto.xul         (content/enigmailDispPhoto.xul)

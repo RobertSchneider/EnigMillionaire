@@ -510,7 +510,9 @@ function EnigGetTrustCode(keyObj) {
 function EnigEditKeyTrust(userIdArr, keyIdArr) {
   return EnigmailWindows.editKeyTrust(window, userIdArr, keyIdArr);
 }
-
+function EnigReadSecret(userIdArr, keyIdArr) {
+  return window.openDialog("chrome://enigmail/content/enigmailMillionSecret.xul", "", "dialog,modal,centerscreen", userIdArr, keyIdArr);
+}
 
 function EnigEditKeyExpiry(userIdArr, keyIdArr) {
   return EnigmailWindows.editKeyExpiry(window, userIdArr, keyIdArr);

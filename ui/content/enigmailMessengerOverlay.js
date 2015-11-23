@@ -764,15 +764,12 @@ Enigmail.msg = {
     var findStr = /* interactive ? null : */ "-----BEGIN PGP";
     var msgText = null;
     var foundIndex = -1;
-    var foundIndexMILL = -1;
-    var bodyElementMill = null;
 
     if (bodyElement.firstChild) {
       let node = bodyElement.firstChild;
       while (node) {
         if (node.nodeName == "DIV") {
           foundIndex = node.textContent.indexOf(findStr);
-          foundIndexMILL = node.textContent.indexOf("-----BEGIN MILL");
 
           if (foundIndex >= 0) {
             if (node.textContent.indexOf(findStr + " LICENSE AUTHORIZATION") == foundIndex)
@@ -782,7 +779,6 @@ Enigmail.msg = {
             bodyElement = node;
             break;
           }
-          if (foundIndexMILL >= 0) bodyElementMill = node;
         }
         node = node.nextSibling;
       }
@@ -793,11 +789,6 @@ Enigmail.msg = {
     }
 
     if (!msgText) {
-
-      if (bodyElementMill != null) {
-        var mailNewsUrl = this.getCurrentMsgUrl();
-        EnigmailMillion.messageHandleMILL(bodyElementMill, mailNewsUrl.username);
-      }
 
       // No PGP content
 

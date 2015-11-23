@@ -19,14 +19,16 @@ Components.utils.import("resource://enigmail/crypto.jsm");
 Components.utils.import("resource://enigmail/bigint.jsm");
 Components.utils.import("resource://enigmail/helpers.jsm");
 Components.utils.import("resource:///modules/mailServices.js");
+Components.utils.import("resource://enigmail/windows.jsm");
 
 const EnigmailMillion = {
-  init : function(fpr, ownfpr)
+  init : function(fpr, ownfpr, to)
   {
     this.tofinger = fpr;
     this.ownfinger = ownfpr;
     this.fromEmail = this.tofinger;
-    
+    this.tomail = to;
+
     dump("verify:"+fpr+ "\n");
     this.G = BigInt.str2bigInt(CONST.G, 10);
     this.N = BigInt.str2bigInt(CONST.N, 16);
@@ -35,21 +37,25 @@ const EnigmailMillion = {
     BigInt.divInt_(this.Q, 2)  // meh
     HLP.CryptoJS = CryptoJS;
     HLP.BigInt = BigInt;
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_state", "0");
   },
 
-  messageHandleMILL: function(node, email) {
-    var plain = node.textContent;
+  messageHandleMILL: function(plain, email, from) {
+
+    this.tomail = from;
+    dump("to-email: " + from);
+
     plain = plain.replace("\n", "");
     plain = plain.replace("\r", "");
     dump("found mill plain : " + plain + "\n");
     var cells = this.passText(this.trimText(plain));
 
-    var html = "<table> ";
+    /*var html = "<table> ";
     for (var i in cells) {
       html += "<tr bgcolor='#e2e3e7'><td>"+ i + "</td><td>" + cells[i] + "</td></tr>";
     };
     html += "</table>";
-    node.innerHTML = html;
+    node.innerHTML = html;*/
 
     this.tofinger = cells["tofinger"];
     this.ownfinger = cells["ownfinger"];
@@ -62,7 +68,7 @@ const EnigmailMillion = {
       this.initialize("test");
       return;
     }
-    //this.initialize("test");
+
     this.processEmail(cells);
 
     dump("\n\n\n");
@@ -72,7 +78,6 @@ const EnigmailMillion = {
     dump(ret+"\n");
     var b = EnigmailPrefs.setPref("testkey2", "test_val");
     dump("-> \n");
-    //this.testMail2("", "test", "body");
     return;
   },
 
@@ -85,6 +90,7 @@ const EnigmailMillion = {
     if (cells["Status"] == "1") this.answerMsg1(cells);
     if (cells["Status"] == "2") this.answerMsg2(cells);
     if (cells["Status"] == "3") this.answerMsg3(cells);
+    if (cells["Status"] == "4") this.answerMsg4(cells);
   },
 
   //BOB
@@ -122,39 +128,15 @@ const EnigmailMillion = {
 
     EnigmailPrefs.setPref(this.fromEmail+"_mill_g2", BigInt.bigInt2str(this.g2, 16));
     EnigmailPrefs.setPref(this.fromEmail+"_mill_g3", BigInt.bigInt2str(this.g3, 16));
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_g3ao", BigInt.bigInt2str(this.g3ao, 16));
 
     //this.makeG2s();
     //==============ANSWER==================
     //this.secret = BigInt.str2bigInt("666", 10);
-    this.makeSecret(true, "baum");
-    //======================================
 
-    var r4 = HLP.randomExponent();
-    this.computePQ(r4);
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_state", "1");
 
-    // zero-knowledge proof that P & Q
-    // were generated according to the protocol
-    var r5 = HLP.randomExponent();
-    var r6 = HLP.randomExponent();
-    var tmp = HLP.multPowMod(this.G, r5, this.g2, r6, this.N);
-    var cP = HLP.smpHash(5, BigInt.powMod(this.g3, r5, this.N), tmp);
-    var d5 = this.computeD(r5, r4, cP);
-    var d6 = this.computeD(r6, this.secret, cP);
-
-    var send = "";
-    send += "g2a="+BigInt.bigInt2str(this.g2a, 16)+CONST.LN;
-    send += "c2="+BigInt.bigInt2str(this.c2, 16)+CONST.LN;
-    send += "d2="+BigInt.bigInt2str(this.d2, 16)+CONST.LN;
-    send += "g3a="+BigInt.bigInt2str(this.g3a, 16)+CONST.LN;
-    send += "c3="+BigInt.bigInt2str(this.c3, 16)+CONST.LN;
-    send += "d3="+BigInt.bigInt2str(this.d3, 16)+CONST.LN;
-    send += "p="+BigInt.bigInt2str(this.p, 16)+CONST.LN;
-    send += "q="+BigInt.bigInt2str(this.q, 16)+CONST.LN;
-    send += "cP="+BigInt.bigInt2str(cP, 16)+CONST.LN;
-    send += "d5="+BigInt.bigInt2str(d5, 16)+CONST.LN;
-    send += "d6="+BigInt.bigInt2str(d6, 16);
-
-    this.smpSendEmail(send, 2);
+    this.readSecret();
   },
 
   //ALICE
@@ -186,13 +168,11 @@ const EnigmailMillion = {
 
     this.g3ao = msg[3]  // save for later
 
-    this.makeSecret(false, "baum");
     this.computeGs(msg[0], msg[3])
 
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_g2", BigInt.bigInt2str(this.g2, 16));
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_g3", BigInt.bigInt2str(this.g3, 16));
+    this.makeSecret(false, secret);
 
-        // verify znp of cP
+    // verify znp of cP
     var t1 = HLP.multPowMod(this.g3, msg[9], msg[6], msg[8], this.N)
     var t2 = HLP.multPowMod(this.G, msg[9], this.g2, msg[10], this.N)
     var t2 = BigInt.multMod(t2, BigInt.powMod(msg[7], msg[8], this.N), this.N)
@@ -215,25 +195,18 @@ const EnigmailMillion = {
     this.QoQ = BigInt.divMod(this.q, msg[7], this.N)
     this.PoP = BigInt.divMod(this.p, msg[6], this.N)
 
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_g3ao", BigInt.bigInt2str(this.g3ao, 16));
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_QoQ", BigInt.bigInt2str(this.QoQ, 16));
+    EnigmailPrefs.setPref(this.fromEmail+"_mill_PoP", BigInt.bigInt2str(this.PoP, 16));
+
     this.computeR()
 
-        // zero-knowledge proof that R
-        // was generated according to the protocol
+    // zero-knowledge proof that R
+    // was generated according to the protocol
     var r7 = HLP.randomExponent()
     var tmp2 = BigInt.powMod(this.QoQ, r7, this.N)
     var cR = HLP.smpHash(7, BigInt.powMod(this.G, r7, this.N), tmp2)
     var d7 = this.computeD(r7, this.a3, cR)
-
-        /*send = HLP.packINT(8) + HLP.packMPIs([
-            this.p
-          , this.q
-          , cP
-          , d5
-          , d6
-          , this.r
-          , cR
-          , d7
-        ])*/
 
     dump("----->\n");
     dump(BigInt.bigInt2str(this.c2, 16) + "\n");
@@ -259,6 +232,7 @@ const EnigmailMillion = {
     
     this.g2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g2"), 16, 0);
     this.g3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3"), 16, 0);
+    this.g3ao = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3ao"), 16, 0);
 
 dump("___\n");
     var _p = BigInt.str2bigInt(cells["p"], 16, 0);
@@ -313,6 +287,40 @@ dump("test5\n");
     var rab = this.computeRab(msg[5])
     var trust = !!BigInt.equals(rab, BigInt.divMod(msg[0], this.p, this.N))
     dump(trust?"YES\n":"NO\n");
+
+    var send = "";
+    send += "r="+BigInt.bigInt2str(this.r, 16)+CONST.LN;
+    send += "cR="+BigInt.bigInt2str(this.cR, 16)+CONST.LN;
+    send += "d7="+BigInt.bigInt2str(d7, 16);
+
+    this.smpSendEmail(send, 4);
+
+    this.init();
+  },
+
+  answerMsg4 : function(cells) {
+    
+    this.g3ao = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3ao"), 16, 0);
+    this.QoQ = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_QoQ"), 16, 0);
+    this.PoP = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_PoP"), 16, 0);
+    
+    var _r = BigInt.str2bigInt(cells["r"], 16, 0);
+    var _cR = BigInt.str2bigInt(cells["cR"], 16, 0);
+    var _d7 = BigInt.str2bigInt(cells["d7"], 16, 0);
+
+    var msg = [_r, _cR, _d7];
+    if (!HLP.checkGroup(msg[0], this.N_MINUS_2)) return this.abort()
+
+    // verify znp of cR
+    var t3 = HLP.multPowMod(this.G, msg[2], this.g3ao, msg[1], this.N)
+    var t4 = HLP.multPowMod(this.QoQ, msg[2], msg[0], msg[1], this.N)
+    if (!HLP.ZKP(8, msg[1], t3, t4)) return this.abort()
+
+    var rab = this.computeRab(msg[0])
+    var trust = !!BigInt.equals(rab, this.PoP)
+    dump(trust?"YES\n":"NO\n");
+
+    this.init();
   },
 
   //START
@@ -361,11 +369,14 @@ dump("test5\n");
     body += "tofinger: " + this.ownfinger + CONST.LN;
     body += textEnd;
     dump(body+"\n");
-    this.sendMail("skjdstzn@gmx.de", "million test", body);
+    //"skjdstzn@gmx.de"
+    this.sendMail(this.tomail, "million test", body);
   },
 
   abort : function() {
     dump("FAILED WRONG FORMAT\n");
+
+    this.init();
   }, 
 
   loadG2s : function() {
@@ -379,6 +390,61 @@ dump("test5\n");
     this.g2a = BigInt.powMod(this.G, this.a2, this.N);
     this.g3a = BigInt.powMod(this.G, this.a3, this.N);
     if (!HLP.checkGroup(this.g2a, this.N_MINUS_2) || !HLP.checkGroup(this.g3a, this.N_MINUS_2)) this.makeG2s();
+  },
+
+  parseEmail : function(toParse) {
+    var em = toParse.substr(toParse.lastIndexOf("<"));
+    em = em.substr(1, em.length-2);
+    return em;
+  },
+
+  hasReadSecret : function(secret) {
+    dump("secret : " + secret + "\n");
+
+    var state = EnigmailPrefs.getPref(this.fromEmail+"_mill_state");
+
+    if (state == "1") {
+        this.g2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g2"), 16, 0);
+        this.g3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3"), 16, 0);
+        this.makeSecret(true, secret);
+        //======================================
+
+        var r4 = HLP.randomExponent();
+        this.computePQ(r4);
+
+        // zero-knowledge proof that P & Q
+        // were generated according to the protocol
+        var r5 = HLP.randomExponent();
+        var r6 = HLP.randomExponent();
+        var tmp = HLP.multPowMod(this.G, r5, this.g2, r6, this.N);
+        var cP = HLP.smpHash(5, BigInt.powMod(this.g3, r5, this.N), tmp);
+        var d5 = this.computeD(r5, r4, cP);
+        var d6 = this.computeD(r6, this.secret, cP);
+
+        var send = "";
+        send += "g2a="+BigInt.bigInt2str(this.g2a, 16)+CONST.LN;
+        send += "c2="+BigInt.bigInt2str(this.c2, 16)+CONST.LN;
+        send += "d2="+BigInt.bigInt2str(this.d2, 16)+CONST.LN;
+        send += "g3a="+BigInt.bigInt2str(this.g3a, 16)+CONST.LN;
+        send += "c3="+BigInt.bigInt2str(this.c3, 16)+CONST.LN;
+        send += "d3="+BigInt.bigInt2str(this.d3, 16)+CONST.LN;
+        send += "p="+BigInt.bigInt2str(this.p, 16)+CONST.LN;
+        send += "q="+BigInt.bigInt2str(this.q, 16)+CONST.LN;
+        send += "cP="+BigInt.bigInt2str(cP, 16)+CONST.LN;
+        send += "d5="+BigInt.bigInt2str(d5, 16)+CONST.LN;
+        send += "d6="+BigInt.bigInt2str(d6, 16);
+
+        this.smpSendEmail(send, 2);
+    }else if (state == "0") {
+        this.makeSecret(false, secret);
+        EnigmailMillion.initialize("quest");
+    }
+  },
+
+  readSecret : function() {
+    dump("open\n");
+    EnigmailWindows.openWin("enigmail:MillionSecret", "chrome://enigmail/content/enigmailMillionSecret.xul", "resizable,centerscreen");
+    dump("open2\n");
   },
 
   makeSecret : function (our, secret) {
@@ -428,13 +494,24 @@ dump("test5\n");
     compFields.body = msg+"\r\n";
     let msgComposeParams = Components.classes["@mozilla.org/messengercompose/composeparams;1"].createInstance(Components.interfaces.nsIMsgComposeParams);
     msgComposeParams.composeFields = compFields;
+    //msgComposeParams.enablePgp = true;
 
     dump(compFields.body+"\n");
 
-    let gMsgCompose = Components.classes["@mozilla.org/messengercompose/compose;1"].createInstance(Components.interfaces.nsIMsgCompose);
+    /*let gMsgCompose = Components.classes["@mozilla.org/messengercompose/compose;1"].createInstance(Components.interfaces.nsIMsgCompose);
     let msgSend = Components.classes["@mozilla.org/messengercompose/send;1"].createInstance(Components.interfaces.nsIMsgSend);
     gMsgCompose.initialize(msgComposeParams);
-    gMsgCompose.SendMsg(msgSend.nsMsgDeliverNow, am.defaultAccount.defaultIdentity, am.defaultAccount, null, null);
+    gMsgCompose.SendMsg(msgSend.nsMsgDeliverNow, am.defaultAccount.defaultIdentity, am.defaultAccount, null, null);*/
+
+    var msgCompFields = Cc["@mozilla.org/messengercompose/composefields;1"].createInstance(Ci.nsIMsgCompFields);
+    var acctManager = Cc["@mozilla.org/messenger/account-manager;1"].createInstance(Ci.nsIMsgAccountManager);
+    var msgCompSvc = Cc["@mozilla.org/messengercompose;1"].getService(Ci.nsIMsgComposeService);
+    var msgCompParam = Cc["@mozilla.org/messengercompose/composeparams;1"].createInstance(Ci.nsIMsgComposeParams);
+    msgComposeParams.identity = acctManager.defaultAccount.defaultIdentity;
+    msgComposeParams.type = Ci.nsIMsgCompType.New;
+    msgComposeParams.format = Ci.nsIMsgCompFormat.Default;
+    msgComposeParams.originalMsgURI = "";
+    msgCompSvc.OpenComposeWindowWithParams("", msgComposeParams);
   },
   /*
     -----BEGIN MILL MESSAGE-----

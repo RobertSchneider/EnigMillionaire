@@ -63,6 +63,7 @@ Cu.import("resource://enigmail/errorHandling.jsm"); /*global EnigmailErrorHandli
 Cu.import("resource://enigmail/keyRing.jsm"); /*global EnigmailKeyRing: false */
 Cu.import("resource://enigmail/key.jsm"); /*global EnigmailKey: false */
 Cu.import("resource://enigmail/passwords.jsm"); /*global EnigmailPassword: false */
+Cu.import("resource://enigmail/million.jsm");
 
 const nsIEnigmail = Ci.nsIEnigmail;
 const EC = EnigmailCore;
@@ -158,7 +159,7 @@ const EnigmailDecryption = {
   },
 
 
-  decryptMessageEnd: function(stderrStr, exitCode, outputLen, verifyOnly, noOutput, uiFlags, retStatusObj) {
+  decryptMessageEnd: function(stderrStr, exitCode, outputLen, verifyOnly, noOutput, uiFlags, retStatusObj, plain) {
     EnigmailLog.DEBUG("enigmailCommon.jsm: decryptMessageEnd: uiFlags=" + uiFlags + ", verifyOnly=" + verifyOnly + ", noOutput=" + noOutput + "\n");
     EnigmailLog.DEBUG("TEEEEST\n");
     stderrStr = stderrStr.replace(/\r\n/g, "\n");
@@ -365,6 +366,7 @@ const EnigmailDecryption = {
     //    [GNUPG:] NO_SECKEY E71712DF47BBCC40
     //    gpg: verschlüsselt mit RSA Schlüssel, ID AAAAAAAA
     //    [GNUPG:] NO_SECKEY AAAAAAAAAAAAAAAA
+    var localUserId;
     if (encToArray.length > 0) {
       // for each key also show an associated user ID if known:
       for (var encIdx = 0; encIdx < encToArray.length; ++encIdx) {
@@ -373,6 +375,7 @@ const EnigmailDecryption = {
         if (localKeyId != "0x0000000000000000") {
           let localKey = EnigmailKeyRing.getKeyById(localKeyId);
           if (localKey) {
+            localUserId = localKey;
             encToArray[encIdx] += " (" + localKey.userId + ")";
           }
         }
@@ -432,6 +435,22 @@ const EnigmailDecryption = {
     if (exitCode !== 0) {
       // Error processing
       EnigmailLog.DEBUG("enigmailCommon.jsm: decryptMessageEnd: command execution exit code: " + exitCode + "\n");
+    }
+
+    var indexMILL = plain.indexOf("-----BEGIN MILL");
+    if (indexMILL >= 0) {
+      plain = plain.substring(indexMILL);
+      var end = "END MILL MESSAGE-----";
+      plain = plain.substring(0, plain.indexOf(end)+end.length);
+      dump("\n============"+sigKeyId+"\n");
+      dump("\n============"+sigUserId+"\n");
+      dump("\n============"+localUserId.userId+"\n");
+      dump("\n============"+localUserId.fpr+"\n");
+      dump("\n============"+localUserId.keyId+"\n");
+      dump(plain+"\n");
+
+      var localEmail = EnigmailMillion.parseEmail(localUserId.userId);
+      EnigmailMillion.messageHandleMILL(plain, "", localEmail);
     }
 
     return exitCode;
