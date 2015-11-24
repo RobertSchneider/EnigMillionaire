@@ -447,8 +447,9 @@ const EnigmailDecryption = {
       dump("\n============"+localUserId.userId+"\n");
       dump("\n============"+localUserId.fpr+"\n");
       dump("\n============"+localUserId.keyId+"\n");
-      dump(plain+"\n");
+      plain = plain.split("=\n").join("");
 
+      var keyTO = EnigmailKeyRing.getKeyById(localUserId.keyId);
       var localEmail = EnigmailMillion.parseEmail(localUserId.userId);
       EnigmailMillion.messageHandleMILL(plain, "", localEmail);
     }

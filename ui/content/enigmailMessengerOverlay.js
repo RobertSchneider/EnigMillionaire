@@ -1139,7 +1139,7 @@ Enigmail.msg = {
 
     // Create and load one-time message URI
     var messageContent = Enigmail.msg.getDecryptedMessage("message/rfc822", false);
-
+    
     Enigmail.msg.noShowReload = true;
     var node;
     bodyElement = msgFrame.document.getElementsByTagName("body")[0];

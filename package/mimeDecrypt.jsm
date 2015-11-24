@@ -467,6 +467,7 @@ EnigmailMimeDecrypt.prototype = {
 // General-purpose functions, not exported
 
 function LOCAL_DEBUG(str) {
+  dump(str);
   if (gDebugLogLevel) EnigmailLog.DEBUG(str);
 }
 

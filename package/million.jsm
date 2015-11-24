@@ -20,14 +20,39 @@ Components.utils.import("resource://enigmail/bigint.jsm");
 Components.utils.import("resource://enigmail/helpers.jsm");
 Components.utils.import("resource:///modules/mailServices.js");
 Components.utils.import("resource://enigmail/windows.jsm");
+Components.utils.import("resource://enigmail/keyRing.jsm");
+
+var gAccountManager = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
 
 const EnigmailMillion = {
+
+  readEmails : function(from)
+  {
+    dump("FROM:"+from+"\n");
+    var keys = gAccountManager.allIdentities;
+    for(var i = 0; i < keys.length; i++) {
+        var key = keys.queryElementAt(i, Components.interfaces.nsIMsgIdentity);
+        dump("-"+key.email);
+        this.fromEmail = key.email;
+    }
+
+    let keyListObj = EnigmailKeyRing.getAllKeys(null, "userid", -1);
+    dump(keyListObj.keyList.length);
+    for(var i = 0; i < keyListObj.keyList.length; i++) {
+        var key = keyListObj.keyList[i];
+        if (this.parseEmail(key.userId) == from) this.tofinger = key.fpr;
+        if (this.parseEmail(key.userId) == this.fromEmail) this.ownfinger = key.fpr;
+        dump(key.userId+"\n");
+    }
+
+    this.tomail = from;
+    dump("\nto-email: " + from);
+    dump("\nfrom-email" + this.fromEmail);
+  },
+
   init : function(fpr, ownfpr, to)
   {
-    this.tofinger = fpr;
-    this.ownfinger = ownfpr;
-    this.fromEmail = this.tofinger;
-    this.tomail = to;
+    this.readEmails(to);
 
     dump("verify:"+fpr+ "\n");
     this.G = BigInt.str2bigInt(CONST.G, 10);
@@ -37,13 +62,12 @@ const EnigmailMillion = {
     BigInt.divInt_(this.Q, 2)  // meh
     HLP.CryptoJS = CryptoJS;
     HLP.BigInt = BigInt;
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_state", "0");
+    EnigmailPrefs.setPref(this.tomail+"_mill_state", "0");
   },
 
   messageHandleMILL: function(plain, email, from) {
 
-    this.tomail = from;
-    dump("to-email: " + from);
+    this.readEmails(from);
 
     plain = plain.replace("\n", "");
     plain = plain.replace("\r", "");
@@ -57,10 +81,8 @@ const EnigmailMillion = {
     html += "</table>";
     node.innerHTML = html;*/
 
-    this.tofinger = cells["tofinger"];
-    this.ownfinger = cells["ownfinger"];
-
-    this.fromEmail = this.tofinger;
+    dump(this.tofinger+"\n");
+    dump(this.ownfinger+"\n");
 
     if(cells["Status"] == "0")
     {
@@ -74,9 +96,6 @@ const EnigmailMillion = {
     dump("\n\n\n");
     dump("===============\n");
 
-    var ret = EnigmailPrefs.getPref("testkey2");
-    dump(ret+"\n");
-    var b = EnigmailPrefs.setPref("testkey2", "test_val");
     dump("-> \n");
     return;
   },
@@ -115,6 +134,9 @@ const EnigmailMillion = {
 
     this.makeG2s()
 
+    EnigmailPrefs.setPref(this.tomail+"_mill_a2", BigInt.bigInt2str(this.a2, 16));
+    EnigmailPrefs.setPref(this.tomail+"_mill_a3", BigInt.bigInt2str(this.a3, 16));
+
     // zero-knowledge proof that the exponents
     // associated with g2a & g3a are known
     var r2 = HLP.randomExponent()
@@ -126,15 +148,15 @@ const EnigmailMillion = {
 
     this.computeGs(msg[0], msg[3])
 
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_g2", BigInt.bigInt2str(this.g2, 16));
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_g3", BigInt.bigInt2str(this.g3, 16));
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_g3ao", BigInt.bigInt2str(this.g3ao, 16));
+    EnigmailPrefs.setPref(this.tomail+"_mill_g2", BigInt.bigInt2str(this.g2, 16));
+    EnigmailPrefs.setPref(this.tomail+"_mill_g3", BigInt.bigInt2str(this.g3, 16));
+    EnigmailPrefs.setPref(this.tomail+"_mill_g3ao", BigInt.bigInt2str(this.g3ao, 16));
 
     //this.makeG2s();
     //==============ANSWER==================
     //this.secret = BigInt.str2bigInt("666", 10);
 
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_state", "1");
+    EnigmailPrefs.setPref(this.tomail+"_mill_state", "1");
 
     this.readSecret();
   },
@@ -142,8 +164,10 @@ const EnigmailMillion = {
   //ALICE
   answerMsg2 : function(cells)
   {
-    this.a2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_a2"), 16, 0);
-    this.a3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_a3"), 16, 0);
+    dump(EnigmailPrefs.getPref(this.tomail+"_mill_a2")+"\n");
+    dump(EnigmailPrefs.getPref(this.tomail+"_mill_a3")+"\n");
+    this.a2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.tomail+"_mill_a2"), 16, 0);
+    this.a3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.tomail+"_mill_a3"), 16, 0);
 
     var _g2a = BigInt.str2bigInt(cells["g2a"], 16, 0);
     var _c2 = BigInt.str2bigInt(cells["c2"], 16, 0);
@@ -170,7 +194,7 @@ const EnigmailMillion = {
 
     this.computeGs(msg[0], msg[3])
 
-    this.makeSecret(false, secret);
+    //this.makeSecret(false, this.secret);
 
     // verify znp of cP
     var t1 = HLP.multPowMod(this.g3, msg[9], msg[6], msg[8], this.N)
@@ -195,9 +219,9 @@ const EnigmailMillion = {
     this.QoQ = BigInt.divMod(this.q, msg[7], this.N)
     this.PoP = BigInt.divMod(this.p, msg[6], this.N)
 
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_g3ao", BigInt.bigInt2str(this.g3ao, 16));
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_QoQ", BigInt.bigInt2str(this.QoQ, 16));
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_PoP", BigInt.bigInt2str(this.PoP, 16));
+    EnigmailPrefs.setPref(this.tomail+"_mill_g3ao", BigInt.bigInt2str(this.g3ao, 16));
+    EnigmailPrefs.setPref(this.tomail+"_mill_QoQ", BigInt.bigInt2str(this.QoQ, 16));
+    EnigmailPrefs.setPref(this.tomail+"_mill_PoP", BigInt.bigInt2str(this.PoP, 16));
 
     this.computeR()
 
@@ -213,14 +237,14 @@ const EnigmailMillion = {
     dump(BigInt.bigInt2str(HLP.smpHash(3, HLP.multPowMod(this.G, this.d2, this.g2a, this.c2, this.N)), 16) + "\n");
 
     var send = "";
-    send += "p="+BigInt.bigInt2str(this.p, 16)+CONST.LN;
-    send += "q="+BigInt.bigInt2str(this.q, 16)+CONST.LN;
-    send += "cP="+BigInt.bigInt2str(cP, 16)+CONST.LN;
-    send += "d5="+BigInt.bigInt2str(d5, 16)+CONST.LN;
-    send += "d6="+BigInt.bigInt2str(d6, 16)+CONST.LN;
-    send += "r="+BigInt.bigInt2str(this.r, 16)+CONST.LN;
-    send += "cR="+BigInt.bigInt2str(cR, 16)+CONST.LN;
-    send += "d7="+BigInt.bigInt2str(d7, 16);
+    send += "p:"+BigInt.bigInt2str(this.p, 16)+CONST.LN;
+    send += "q:"+BigInt.bigInt2str(this.q, 16)+CONST.LN;
+    send += "cP:"+BigInt.bigInt2str(cP, 16)+CONST.LN;
+    send += "d5:"+BigInt.bigInt2str(d5, 16)+CONST.LN;
+    send += "d6:"+BigInt.bigInt2str(d6, 16)+CONST.LN;
+    send += "r:"+BigInt.bigInt2str(this.r, 16)+CONST.LN;
+    send += "cR:"+BigInt.bigInt2str(cR, 16)+CONST.LN;
+    send += "d7:"+BigInt.bigInt2str(d7, 16);
 
     this.smpSendEmail(send, 3);
   },
@@ -230,9 +254,9 @@ const EnigmailMillion = {
   {
     dump("___\n");
     
-    this.g2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g2"), 16, 0);
-    this.g3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3"), 16, 0);
-    this.g3ao = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3ao"), 16, 0);
+    this.g2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.tomail+"_mill_g2"), 16, 0);
+    this.g3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.tomail+"_mill_g3"), 16, 0);
+    this.g3ao = BigInt.str2bigInt(EnigmailPrefs.getPref(this.tomail+"_mill_g3ao"), 16, 0);
 
 dump("___\n");
     var _p = BigInt.str2bigInt(cells["p"], 16, 0);
@@ -289,9 +313,9 @@ dump("test5\n");
     dump(trust?"YES\n":"NO\n");
 
     var send = "";
-    send += "r="+BigInt.bigInt2str(this.r, 16)+CONST.LN;
-    send += "cR="+BigInt.bigInt2str(this.cR, 16)+CONST.LN;
-    send += "d7="+BigInt.bigInt2str(d7, 16);
+    send += "r:"+BigInt.bigInt2str(this.r, 16)+CONST.LN;
+    send += "cR:"+BigInt.bigInt2str(this.cR, 16)+CONST.LN;
+    send += "d7:"+BigInt.bigInt2str(d7, 16);
 
     this.smpSendEmail(send, 4);
 
@@ -300,9 +324,9 @@ dump("test5\n");
 
   answerMsg4 : function(cells) {
     
-    this.g3ao = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3ao"), 16, 0);
-    this.QoQ = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_QoQ"), 16, 0);
-    this.PoP = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_PoP"), 16, 0);
+    this.g3ao = BigInt.str2bigInt(EnigmailPrefs.getPref(this.tomail+"_mill_g3ao"), 16, 0);
+    this.QoQ = BigInt.str2bigInt(EnigmailPrefs.getPref(this.tomail+"_mill_QoQ"), 16, 0);
+    this.PoP = BigInt.str2bigInt(EnigmailPrefs.getPref(this.tomail+"_mill_PoP"), 16, 0);
     
     var _r = BigInt.str2bigInt(cells["r"], 16, 0);
     var _cR = BigInt.str2bigInt(cells["cR"], 16, 0);
@@ -337,20 +361,19 @@ dump("test5\n");
     this.d2 = this.computeD(r2, this.a2, this.c2);
     this.d3 = this.computeD(r3, this.a3, this.c3);
 
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_a2", BigInt.bigInt2str(this.a2, 16));
-    EnigmailPrefs.setPref(this.fromEmail+"_mill_a3", BigInt.bigInt2str(this.a3, 16));
+    EnigmailPrefs.setPref(this.tomail+"_mill_a2", BigInt.bigInt2str(this.a2, 16));
+    EnigmailPrefs.setPref(this.tomail+"_mill_a3", BigInt.bigInt2str(this.a3, 16));
 
     var send = "";
     
-    send += "question="+question+CONST.LN;
-    send += "g2a="+BigInt.bigInt2str(this.g2a, 16)+"#\n";
-    send += "c2="+BigInt.bigInt2str(this.c2, 16)+CONST.LN;
-    send += "d2="+BigInt.bigInt2str(this.d2, 16)+CONST.LN;
-    send += "g3a="+BigInt.bigInt2str(this.g3a, 16)+CONST.LN;
-    send += "c3="+BigInt.bigInt2str(this.c3, 16)+CONST.LN;
-    send += "d3="+BigInt.bigInt2str(this.d3, 16);
+    send += "question:"+question+CONST.LN;
+    send += "g2a:"+BigInt.bigInt2str(this.g2a, 16)+CONST.LN;
+    send += "c2:"+BigInt.bigInt2str(this.c2, 16)+CONST.LN;
+    send += "d2:"+BigInt.bigInt2str(this.d2, 16)+CONST.LN;
+    send += "g3a:"+BigInt.bigInt2str(this.g3a, 16)+CONST.LN;
+    send += "c3:"+BigInt.bigInt2str(this.c3, 16)+CONST.LN;
+    send += "d3:"+BigInt.bigInt2str(this.d3, 16);
 
-    this.makeSecret(true, "baum");
     this.smpSendEmail(send, 1);
     dump(send.length+"\n");
   },
@@ -401,11 +424,11 @@ dump("test5\n");
   hasReadSecret : function(secret) {
     dump("secret : " + secret + "\n");
 
-    var state = EnigmailPrefs.getPref(this.fromEmail+"_mill_state");
+    var state = EnigmailPrefs.getPref(this.tomail+"_mill_state");
 
     if (state == "1") {
-        this.g2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g2"), 16, 0);
-        this.g3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.fromEmail+"_mill_g3"), 16, 0);
+        this.g2 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.tomail+"_mill_g2"), 16, 0);
+        this.g3 = BigInt.str2bigInt(EnigmailPrefs.getPref(this.tomail+"_mill_g3"), 16, 0);
         this.makeSecret(true, secret);
         //======================================
 
@@ -422,17 +445,17 @@ dump("test5\n");
         var d6 = this.computeD(r6, this.secret, cP);
 
         var send = "";
-        send += "g2a="+BigInt.bigInt2str(this.g2a, 16)+CONST.LN;
-        send += "c2="+BigInt.bigInt2str(this.c2, 16)+CONST.LN;
-        send += "d2="+BigInt.bigInt2str(this.d2, 16)+CONST.LN;
-        send += "g3a="+BigInt.bigInt2str(this.g3a, 16)+CONST.LN;
-        send += "c3="+BigInt.bigInt2str(this.c3, 16)+CONST.LN;
-        send += "d3="+BigInt.bigInt2str(this.d3, 16)+CONST.LN;
-        send += "p="+BigInt.bigInt2str(this.p, 16)+CONST.LN;
-        send += "q="+BigInt.bigInt2str(this.q, 16)+CONST.LN;
-        send += "cP="+BigInt.bigInt2str(cP, 16)+CONST.LN;
-        send += "d5="+BigInt.bigInt2str(d5, 16)+CONST.LN;
-        send += "d6="+BigInt.bigInt2str(d6, 16);
+        send += "g2a:"+BigInt.bigInt2str(this.g2a, 16)+CONST.LN;
+        send += "c2:"+BigInt.bigInt2str(this.c2, 16)+CONST.LN;
+        send += "d2:"+BigInt.bigInt2str(this.d2, 16)+CONST.LN;
+        send += "g3a:"+BigInt.bigInt2str(this.g3a, 16)+CONST.LN;
+        send += "c3:"+BigInt.bigInt2str(this.c3, 16)+CONST.LN;
+        send += "d3:"+BigInt.bigInt2str(this.d3, 16)+CONST.LN;
+        send += "p:"+BigInt.bigInt2str(this.p, 16)+CONST.LN;
+        send += "q:"+BigInt.bigInt2str(this.q, 16)+CONST.LN;
+        send += "cP:"+BigInt.bigInt2str(cP, 16)+CONST.LN;
+        send += "d5:"+BigInt.bigInt2str(d5, 16)+CONST.LN;
+        send += "d6:"+BigInt.bigInt2str(d6, 16);
 
         this.smpSendEmail(send, 2);
     }else if (state == "0") {

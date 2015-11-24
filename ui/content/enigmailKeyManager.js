@@ -822,6 +822,7 @@ function enigSmpVerify() {
   }
   dump(gKeyList[keyList[0]].keyId+"\n");
   dump(gKeyList[keyList[0]].fpr+"\n");
+  var toemail = EnigmailMillion.parseEmail(gKeyList[keyList[0]].userId);
 
   var own;
   var to;
@@ -833,7 +834,8 @@ function enigSmpVerify() {
     dump(em + "\n");
     if(email == em) {own = gKeyList[i].fpr; to = em; break;}
   }
-  EnigmailMillion.init(gKeyList[keyList[0]].fpr, own, to);
+  dump(email+"\n");
+  EnigmailMillion.init(gKeyList[keyList[0]].fpr, own, toemail);
   EnigmailMillion.readSecret();
 }
 
