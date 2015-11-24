@@ -229,6 +229,7 @@ function enigUserSelCreateRow(keyObj, subKeyNum, keyNum) {
   var fprCol = document.createElement("treecell");
   var userRow = document.createElement("treerow");
   var treeItem = document.createElement("treeitem");
+  var lsignCol = document.createElement("treecell");
   var keyTrust;
 
   userCol.setAttribute("id", "name");
@@ -236,6 +237,7 @@ function enigUserSelCreateRow(keyObj, subKeyNum, keyNum) {
     // primary key
     userCol.setAttribute("label", keyObj.userId);
     keyCol.setAttribute("label", keyObj.keyId.substr(-8, 8));
+    lsignCol.setAttribute("label", "no");
     if (keyObj.secretAvailable) {
       typeCol.setAttribute("label", EnigGetString("keyType.publicAndSec"));
     }
@@ -316,12 +318,14 @@ function enigUserSelCreateRow(keyObj, subKeyNum, keyNum) {
   typeCol.setAttribute("id", "keyType");
   validCol.setAttribute("id", "keyValid");
   trustCol.setAttribute("id", "ownerTrust");
+  lsignCol.setAttribute("id", "localSign");
 
   userRow.appendChild(userCol);
   userRow.appendChild(keyCol);
   userRow.appendChild(typeCol);
   userRow.appendChild(validCol);
   userRow.appendChild(trustCol);
+  userRow.appendChild(lsignCol);
   userRow.appendChild(expCol);
   userRow.appendChild(fprCol);
   var attr;

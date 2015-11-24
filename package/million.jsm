@@ -314,7 +314,7 @@ dump("test5\n");
 
     var send = "";
     send += "r:"+BigInt.bigInt2str(this.r, 16)+CONST.LN;
-    send += "cR:"+BigInt.bigInt2str(this.cR, 16)+CONST.LN;
+    send += "cR:"+BigInt.bigInt2str(cR, 16)+CONST.LN;
     send += "d7:"+BigInt.bigInt2str(d7, 16);
 
     this.smpSendEmail(send, 4);
