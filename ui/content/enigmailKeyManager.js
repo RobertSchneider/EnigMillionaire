@@ -96,7 +96,8 @@ function enigmailKeyManagerLoad() {
 }
 
 function displayFullList() {
-  return (gShowAllKeysElement.getAttribute("checked") == "true");
+  return false;
+  //return (gShowAllKeysElement.getAttribute("checked") == "true");
 }
 
 function loadkeyList() {
