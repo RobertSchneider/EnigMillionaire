@@ -45,6 +45,7 @@ const Cu = Components.utils;
 Components.utils.import("resource://enigmail/streams.jsm"); /*global EnigmailStreams: false */
 Components.utils.import("resource://enigmail/million.jsm");
 Components.utils.import("resource:///modules/mailServices.js");
+Components.utils.import("resource://enigmail/core.jsm"); /*global EnigmailGpg: false */
 
 
 const INPUT = 0;
@@ -156,6 +157,7 @@ function enigmailBuildList(refresh) {
     if (gEnigLastSelectedKeys && typeof(gEnigLastSelectedKeys[keyId]) != "undefined")
       selectedItems.push(i);
     var treeItem = null;
+    dump(gKeySortList[i]+"\n");
     treeItem = enigUserSelCreateRow(keyObj, -1, gKeySortList[i].keyNum);
     treeItem.setAttribute("container", "true");
     var subChildren = document.createElement("treechildren");
@@ -237,7 +239,7 @@ function enigUserSelCreateRow(keyObj, subKeyNum, keyNum) {
     // primary key
     userCol.setAttribute("label", keyObj.userId);
     keyCol.setAttribute("label", keyObj.keyId.substr(-8, 8));
-    lsignCol.setAttribute("label", "no");
+    lsignCol.setAttribute("label", (EnigGetPref(keyObj.fpr+"_lsign") == true)?"yes":"no");
     if (keyObj.secretAvailable) {
       typeCol.setAttribute("label", EnigGetString("keyType.publicAndSec"));
     }
@@ -318,14 +320,14 @@ function enigUserSelCreateRow(keyObj, subKeyNum, keyNum) {
   typeCol.setAttribute("id", "keyType");
   validCol.setAttribute("id", "keyValid");
   trustCol.setAttribute("id", "ownerTrust");
-  lsignCol.setAttribute("id", "localSign");
+  //lsignCol.setAttribute("id", "lsign");
 
   userRow.appendChild(userCol);
   userRow.appendChild(keyCol);
   userRow.appendChild(typeCol);
   userRow.appendChild(validCol);
-  userRow.appendChild(trustCol);
   userRow.appendChild(lsignCol);
+  userRow.appendChild(trustCol);
   userRow.appendChild(expCol);
   userRow.appendChild(fprCol);
   var attr;
@@ -687,8 +689,6 @@ function enigCreateKeyMsg() {
   catch (ex) {}
   tmpFile.append("key.asc");
   tmpFile.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0600);
-
-
 
   // save file
   var exitCodeObj = {};

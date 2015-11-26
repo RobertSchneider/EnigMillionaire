@@ -1,0 +1,34 @@
+<?xml-stylesheet href="chrome://communicator/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://enigmail/skin/enigmail.css" type="text/css"?>
+
+<!DOCTYPE window [
+<!ENTITY % brandDTD SYSTEM "chrome://global/locale/brand.dtd" >
+%brandDTD;
+<!ENTITY % enigMailDTD SYSTEM "chrome://enigmail/locale/enigmail.dtd" >
+%enigMailDTD;
+]>
+
+<dialog id="enigmailMillionFailedDlg"
+        title="SMP Result"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        buttons="accept"
+        onload="return onLoad();"
+        ondialogaccept="return onAccept();"
+        ondialogcancel="onCancel();"
+        minheight="50">
+
+
+  <script type="application/x-javascript" src="chrome://enigmail/content/enigmailCommon.js"/>
+  <script type="application/x-javascript" src="chrome://enigmail/content/enigmailMillionFailed.js"/>
+
+  <!-- <separator/> -->
+    <label value="The verification FAILED." control="secret"/>
+    <vbox align="start">
+    </vbox>
+
+  <vbox align="end">
+    <hbox align="end">
+      
+    </hbox>
+  </vbox>
+</dialog>

@@ -53,8 +53,8 @@ Cu.import("resource://enigmail/files.jsm");
 Cu.import("resource://enigmail/log.jsm");
 Cu.import("resource://enigmail/subprocess.jsm");
 Cu.import("resource://enigmail/errorHandling.jsm");
-Cu.import("resource://enigmail/core.jsm");
 Cu.import("resource://enigmail/os.jsm"); /*global EnigmailOS: false */
+Cu.import("resource://enigmail/core.jsm");
 
 const nsIEnigmail = Ci.nsIEnigmail;
 
@@ -182,7 +182,7 @@ const EnigmailExecution = {
     var outputData = "";
     var errOutput = "";
 
-    EnigmailLog.CONSOLE("enigmail> " + EnigmailFiles.formatCmdLine(command, args) + "\n");
+    //EnigmailLog.CONSOLE("enigmail> " + EnigmailFiles.formatCmdLine(command, args) + "\n");
 
     try {
       subprocess.call({
@@ -352,6 +352,18 @@ const EnigmailExecution = {
     procBuilder.setCommand(command);
     procBuilder.setArguments(args);
     procBuilder.setEnvironment(EnigmailCore.getEnvList());
+    procBuilder.setStdin(stdinFunc);
+    procBuilder.setStdout(stdoutFunc);
+    procBuilder.setDone(doneFunc);
+    var proc = procBuilder.build();
+    subprocess.call(proc).wait();
+  },
+
+   execCmd3: function(command, args, stdinFunc, stdoutFunc, doneFunc, env) {
+    var procBuilder = new EnigmailExecution.processBuilder();
+    procBuilder.setCommand(command);
+    procBuilder.setArguments(args);
+    procBuilder.setEnvironment(env);
     procBuilder.setStdin(stdinFunc);
     procBuilder.setStdout(stdoutFunc);
     procBuilder.setDone(doneFunc);

@@ -454,6 +454,14 @@
                    hidden="true"
                    persist="width ordinal hidden"/>
           <splitter class="tree-splitter"/>
+          <treecol id="lsignCol" style="width:70px"
+                   label="local signed"
+                   flex="1"
+                   class="sortDirectionIndicator"
+                   onclick="sortTree(this)"
+                   hidden="true"
+                   persist="width ordinal hidden"/>
+          <splitter class="tree-splitter"/>
           <treecol id="trustCol" style="width:70px"
                    label="&enigmail.keyMan.ownerTrust.label;"
                    flex="1"

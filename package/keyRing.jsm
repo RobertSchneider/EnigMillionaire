@@ -267,6 +267,20 @@ var EnigmailKeyRing = {
     return null;
   },
 
+  getSignes : function() {
+    let args = EnigmailGpg.getStandardArgs(true);
+    args = args.concat(["--with-colons", "--list-sigs", "--fixed-list-mode"]);
+    
+    var statusFlagsObj = {};
+    statusFlagsObj.value = 0;
+
+    const cmdErrorMsgObj = {};
+    var exitCodeObj = {};
+    let listText = EnigmailExecution.execCmd(EnigmailGpg.agentPath, args, "", exitCodeObj, statusFlagsObj, {}, cmdErrorMsgObj);
+
+    return listText;
+},
+
   /**
    * get 1st key object that matches a given fingerprint
    *
@@ -1043,7 +1057,6 @@ var EnigmailKeyRing = {
 
 /************************ INTERNAL FUNCTIONS ************************/
 
-
 /**
  * returns the output of --with-colons --list[-secret]-keys
  */
@@ -1058,14 +1071,13 @@ function getUserIdList(secretOnly, refresh, exitCodeObj, statusFlagsObj, errorMs
     }
     else {
       if (refresh) EnigmailKeyRing.clearCache();
-      args = args.concat(["--with-fingerprint", "--fixed-list-mode", "--with-colons", "--list-keys"]);
+      args = args.concat(["--with-fingerprint", "--fixed-list-mode", "--with-colons", "--list-sigs"]);
     }
 
     statusFlagsObj.value = 0;
 
     const cmdErrorMsgObj = {};
     let listText = EnigmailExecution.execCmd(EnigmailGpg.agentPath, args, "", exitCodeObj, statusFlagsObj, {}, cmdErrorMsgObj);
-
     if (!(statusFlagsObj.value & nsIEnigmail.BAD_SIGNATURE)) {
       // ignore exit code as recommended by GnuPG authors
       exitCodeObj.value = 0;
@@ -1490,6 +1502,9 @@ function createKeyObjects(keyListString, keyListObj) {
             keyObj.photoAvailable = true;
             ++uatNum;
           }
+          break;
+        case "sig":
+          if (keyListString.indexOf("10l") >= 0) keyListObj.lsigned = true;
           break;
         case "tru":
           keyListObj.trustModel = "?";

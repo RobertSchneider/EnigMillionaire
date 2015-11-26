@@ -21,6 +21,8 @@ Components.utils.import("resource://enigmail/helpers.jsm");
 Components.utils.import("resource:///modules/mailServices.js");
 Components.utils.import("resource://enigmail/windows.jsm");
 Components.utils.import("resource://enigmail/keyRing.jsm");
+Components.utils.import("resource://enigmail/execution.jsm"); /*global EnigmailExecution: false */
+Components.utils.import("resource://enigmail/gpg.jsm"); /*global EnigmailGpg: false */
 
 var gAccountManager = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
 
@@ -46,12 +48,19 @@ const EnigmailMillion = {
     }
 
     this.tomail = from;
-    dump("\nto-email: " + from);
-    dump("\nfrom-email" + this.fromEmail);
+    dump("\nto-email: " + from + " " + this.tofinger);
+    dump("\nfrom-email" + this.fromEmail + " " + this.ownfinger);
   },
 
   init : function(fpr, ownfpr, to)
   {
+    var cmdErrorMsgObj = {};
+    var statusFlagsObj = {};
+    var statusMsgObj = {};
+    var exitCodeObj = {};
+    //let listText = EnigmailExecution.execCmd("/usr/bin/gpg2", "--list-keys", "", exitCodeObj, statusFlagsObj, {}, cmdErrorMsgObj);
+    //dump(listText);
+
     this.readEmails(to);
 
     dump("verify:"+fpr+ "\n");
@@ -312,6 +321,13 @@ dump("test5\n");
     var trust = !!BigInt.equals(rab, BigInt.divMod(msg[0], this.p, this.N))
     dump(trust?"YES\n":"NO\n");
 
+    var tex = "enigmailMillionFailed.xul";
+    if (trust) {
+        tex = "enigmailMillionResult.xul";
+        EnigmailPrefs.setPref(this.tofinger+"_lsign", true);
+    }
+    EnigmailWindows.openWin("enigmail:MillionSecret", "chrome://enigmail/content/"+tex, "resizable,centerscreen");
+
     var send = "";
     send += "r:"+BigInt.bigInt2str(this.r, 16)+CONST.LN;
     send += "cR:"+BigInt.bigInt2str(cR, 16)+CONST.LN;
@@ -344,6 +360,12 @@ dump("test5\n");
     var trust = !!BigInt.equals(rab, this.PoP)
     dump(trust?"YES\n":"NO\n");
 
+    var tex = "enigmailMillionFailed.xul";
+    if (trust) {
+        tex = "enigmailMillionResult.xul";
+        EnigmailPrefs.setPref(this.tofinger+"_lsign", true);
+    }
+    EnigmailWindows.openWin("enigmail:MillionSecret", "chrome://enigmail/content/"+tex, "resizable,centerscreen");
     this.init();
   },
 
@@ -388,8 +410,6 @@ dump("test5\n");
     body += "Data:#";
     body += data;
     body += CONST.LN;
-    body += "ownfinger: " + this.tofinger + CONST.LN;
-    body += "tofinger: " + this.ownfinger + CONST.LN;
     body += textEnd;
     dump(body+"\n");
     //"skjdstzn@gmx.de"
