@@ -455,7 +455,7 @@
                    persist="width ordinal hidden"/>
           <splitter class="tree-splitter"/>
           <treecol id="lsignCol" style="width:70px"
-                   label="local signed"
+                   label="lsigned"
                    flex="1"
                    class="sortDirectionIndicator"
                    onclick="sortTree(this)"
